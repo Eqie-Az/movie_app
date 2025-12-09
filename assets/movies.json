@@ -1,0 +1,202 @@
+[
+  {
+    "title": "Interstellar",
+    "overview_id": "Sekelompok penjelajah luar angkasa melakukan perjalanan melalui lubang cacing untuk menemukan planet baru yang dapat dihuni demi menyelamatkan umat manusia dari kepunahan di Bumi.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg",
+    "release_date": "2014-11-07",
+    "category": "Sci-Fi",
+    "is_popular": true
+  },
+  {
+    "title": "The Dark Knight",
+    "overview_id": "Batman harus menghadapi Joker, penjahat jenius yang berusaha menjerumuskan Gotham ke dalam kekacauan dan menguji batas moral sang pahlawan.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+    "release_date": "2008-07-18",
+    "category": "Action",
+    "is_popular": true
+  },
+  {
+    "title": "The Social Network",
+    "overview_id": "Kisah di balik terciptanya Facebook dan konflik hukum yang muncul di antara para pendirinya ketika media sosial itu menjadi fenomena global.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/n0ybibhJtQ5icDqTp8eRytcIHJx.jpg",
+    "release_date": "2010-10-01",
+    "category": "Drama",
+    "is_popular": false
+  },
+  {
+    "title": "Avengers: Endgame",
+    "overview_id": "Setelah kekalahan besar dari Thanos, para Avengers yang tersisa bersatu kembali untuk memperbaiki waktu dan mengembalikan keseimbangan alam semesta.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg",
+    "release_date": "2019-04-26",
+    "category": "Action",
+    "is_popular": true
+  },
+  {
+    "title": "Spider-Man: No Way Home",
+    "overview_id": "Ketika identitas Spider-Man terbongkar ke publik, Peter Parker meminta bantuan Doctor Strange, namun eksperimen mereka membuka portal multiverse yang kacau.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+    "release_date": "2021-12-17",
+    "category": "Action",
+    "is_popular": true
+  },
+  {
+    "title": "Avatar: The Way of Water",
+    "overview_id": "Jake Sully dan Neytiri membangun keluarga di Pandora, namun ancaman baru memaksa mereka untuk menjelajahi dunia laut yang belum dikenal.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg",
+    "release_date": "2022-12-16",
+    "category": "Adventure",
+    "is_popular": true
+  },
+  {
+    "title": "The Batman",
+    "overview_id": "Saat pembunuh berantai Riddler meneror Gotham, Batman mengungkap korupsi besar yang mengaitkan keluarganya dengan rahasia kelam kota tersebut.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+    "release_date": "2022-03-04",
+    "category": "Action",
+    "is_popular": false
+  },
+  {
+    "title": "Guardians of the Galaxy Vol. 3",
+    "overview_id": "Para Guardian berjuang untuk menyelamatkan teman mereka Rocket dari masa lalunya yang kelam, sekaligus menghadapi musuh baru yang berbahaya.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
+    "release_date": "2023-05-05",
+    "category": "Adventure",
+    "is_popular": true
+  },
+  {
+    "title": "Black Panther: Wakanda Forever",
+    "overview_id": "Setelah kematian Raja T'Challa, rakyat Wakanda harus berjuang melindungi negerinya dari kekuatan luar yang ingin menguasai vibranium.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg",
+    "release_date": "2022-11-11",
+    "category": "Action",
+    "is_popular": false
+  },
+  {
+    "title": "Doctor Strange in the Multiverse of Madness",
+    "overview_id": "Doctor Strange menjelajahi berbagai dimensi untuk menghentikan ancaman yang dapat menghancurkan seluruh multiverse.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/wRnbWt44nKjsFPrqSmwYki5vZtF.jpg",
+    "release_date": "2022-05-06",
+    "category": "Sci-Fi",
+    "is_popular": true
+  },
+  {
+    "title": "Tenet",
+    "overview_id": "Seorang agen rahasia menggunakan teknologi pembalikan waktu untuk mencegah perang dunia ketiga yang dapat memusnahkan dunia.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg",
+    "release_date": "2020-08-26",
+    "category": "Action",
+    "is_popular": false
+  },
+  {
+    "title": "Joker",
+    "overview_id": "Arthur Fleck, seorang pelawak gagal di Gotham, perlahan kehilangan kewarasannya dan menjadi sosok kriminal ikonik bernama Joker.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg",
+    "release_date": "2019-10-04",
+    "category": "Drama",
+    "is_popular": true
+  },
+  {
+    "title": "Parasite",
+    "overview_id": "Keluarga miskin Kim menyusup ke rumah keluarga kaya Park dengan berpura-pura menjadi pekerja profesional, hingga situasi berubah tragis.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
+    "release_date": "2019-05-30",
+    "category": "Drama",
+    "is_popular": false
+  },
+  {
+    "title": "Frozen II",
+    "overview_id": "Elsa dan Anna memulai petualangan ke hutan ajaib untuk menemukan asal-usul kekuatan Elsa dan menyelamatkan kerajaan Arendelle.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/pjeMs3yqRmFL3giJy4PMXWZTTPa.jpg",
+    "release_date": "2019-11-22",
+    "category": "Animation",
+    "is_popular": false
+  },
+  {
+    "title": "Encanto",
+    "overview_id": "Mirabel adalah satu-satunya anggota keluarga Madrigal yang tidak memiliki kekuatan ajaib, namun dialah yang harus menyelamatkan rumah mereka.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg",
+    "release_date": "2021-11-24",
+    "category": "Animation",
+    "is_popular": false
+  },
+  {
+    "title": "Elemental",
+    "overview_id": "Di kota di mana api, air, tanah, dan udara hidup berdampingan, dua elemen yang berbeda menemukan kesamaan yang tak terduga.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/8riWcADI1ekEiBguVB9vkilhiQm.jpg",
+    "release_date": "2023-06-16",
+    "category": "Animation",
+    "is_popular": false
+  },
+  {
+    "title": "Coco",
+    "overview_id": "Miguel, bocah yang mencintai musik, melakukan perjalanan ke Dunia Arwah untuk menemukan rahasia keluarga dan mimpinya sebagai musisi.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/gGEsBPAijhVUFoiNpgZXqRVWJt2.jpg",
+    "release_date": "2017-11-22",
+    "category": "Animation",
+    "is_popular": true
+  },
+  {
+    "title": "Inside Out",
+    "overview_id": "Perjalanan emosional seorang gadis muda bernama Riley yang harus menyesuaikan diri ketika keluarganya pindah ke kota baru.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/2H1TmgdfNtsKlU9jKdeNyYL5y8T.jpg",
+    "release_date": "2015-06-19",
+    "category": "Animation",
+    "is_popular": true
+  },
+  {
+    "title": "Toy Story 4",
+    "overview_id": "Woody dan kawan-kawan memulai petualangan baru bersama Forky, mainan buatan tangan, yang membuat mereka memahami arti menjadi milik seseorang.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/w9kR8qbmQ01HwnvK4alvnQ2ca0L.jpg",
+    "release_date": "2019-06-21",
+    "category": "Animation",
+    "is_popular": false
+  },
+  {
+    "title": "Lightyear",
+    "overview_id": "Kisah asal usul Buzz Lightyear, sang pahlawan luar angkasa, yang menjalankan misi epik menembus waktu demi menyelamatkan umat manusia.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/1Rr5SrvHxMXHu5RjKpaMba8VTzi.jpg",
+    "release_date": "2022-06-17",
+    "category": "Animation",
+    "is_popular": false
+  },
+  {
+    "title": "Up",
+    "overview_id": "Carl, seorang pria tua, mengikat ribuan balon di rumahnya untuk terbang ke Amerika Selatan, tanpa sengaja membawa serta bocah pramuka bernama Russell.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/vpbaStTMt8qqXaEgnOR2EE4DNJk.jpg",
+    "release_date": "2009-05-29",
+    "category": "Animation",
+    "is_popular": true
+  },
+  {
+    "title": "Soul",
+    "overview_id": "Seorang musisi jazz yang kehilangan semangat hidupnya menemukan arti sejati dari eksistensi ketika jiwanya terpisah dari tubuhnya.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/hm58Jw4Lw8OIeECIq5qyPYhAeRJ.jpg",
+    "release_date": "2020-12-25",
+    "category": "Animation",
+    "is_popular": true
+  },
+  {
+    "title": "Luca",
+    "overview_id": "Persahabatan dua anak laki-laki yang ternyata adalah monster laut teruji ketika mereka ingin merasakan kehidupan di daratan manusia.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/jTswp6KyDYKtvC52GbHagrZbGvD.jpg",
+    "release_date": "2021-06-18",
+    "category": "Animation",
+    "is_popular": false
+  },
+  {
+    "title": "Turning Red",
+    "overview_id": "Meilin Lee, gadis berusia 13 tahun, berubah menjadi panda merah raksasa setiap kali ia merasa emosi berlebihan.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/qsdjk9oAKSQMWs0Vt5Pyfh6O4GZ.jpg",
+    "release_date": "2022-03-11",
+    "category": "Animation",
+    "is_popular": false
+  },
+  {
+    "title": "Zootopia",
+    "overview_id": "Judy Hopps, kelinci polisi pertama di kota Zootopia, bekerja sama dengan rubah licik Nick Wilde untuk mengungkap konspirasi besar.",
+    "poster_path": "https://image.tmdb.org/t/p/w500/hlK0e0wAQ3VLuJcsfIYPvb4JVud.jpg",
+    "release_date": "2016-03-04",
+    "category": "Animation",
+    "is_popular": true
+  }
+]
