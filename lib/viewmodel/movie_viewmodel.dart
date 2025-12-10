@@ -3,153 +3,128 @@ import 'package:http/http.dart' as http;
 import '../model/movie.dart';
 
 class MovieViewModel {
-  // API Key Anda
-  static const String _apiKey = '3a8b66ce7b80e698cfa26e6104b598d2';
+  static const String _apiKey =
+      '3a8b66ce7b80e698cfa26e6104b598d2'; // API Key Anda
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
-  // ---------------------------------------------------------------------------
-  // 1. MENGAMBIL DAFTAR FILM POPULER (HOME PAGE)
-  // ---------------------------------------------------------------------------
-  Future<List<Movie>> fetchMovies() async {
+  // 1. SEDANG TAYANG (Menggunakan endpoint 'now_playing' agar lebih akurat)
+  Future<List<Movie>> fetchMovies(String languageCode) async {
     try {
-      // a. Request Data Bahasa Indonesia (Prioritas Utama)
-      // LINK API: https://api.themoviedb.org/3/movie/popular?api_key=3a8b66ce7b80e698cfa26e6104b598d2&language=id-ID
-      final responseIndo = await http.get(
-        Uri.parse('$_baseUrl/movie/popular?api_key=$_apiKey&language=id-ID'),
+      String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
+      // Gunakan now_playing agar beda dengan upcoming
+      final response = await http.get(
+        Uri.parse(
+          '$_baseUrl/movie/now_playing?api_key=$_apiKey&language=$apiLang&page=1',
+        ),
       );
 
-      // b. Request Data Bahasa Inggris (Sebagai Cadangan jika sinopsis kosong)
-      // LINK API: https://api.themoviedb.org/3/movie/popular?api_key=3a8b66ce7b80e698cfa26e6104b598d2&language=en-US
-      final responseEn = await http.get(
-        Uri.parse('$_baseUrl/movie/popular?api_key=$_apiKey&language=en-US'),
-      );
-
-      if (responseIndo.statusCode == 200 && responseEn.statusCode == 200) {
-        final List<dynamic> resultsIndo = json.decode(
-          responseIndo.body,
-        )['results'];
-        final List<dynamic> resultsEn = json.decode(responseEn.body)['results'];
-
-        List<Movie> movies = [];
-
-        for (int i = 0; i < resultsIndo.length; i++) {
-          var movieJson = resultsIndo[i]; // Ambil data Indo
-
-          // LOGIKA UTAMA: Cek apakah overview (sinopsis) kosong?
-          if (movieJson['overview'] == null || movieJson['overview'] == "") {
-            // Jika kosong, cari film yang sama di list Inggris berdasarkan ID
-            var movieEn = resultsEn.firstWhere(
-              (element) => element['id'] == movieJson['id'],
-              orElse: () => null,
-            );
-
-            // Jika ketemu data Inggrisnya, pakai sinopsis Inggris
-            if (movieEn != null && movieEn['overview'] != "") {
-              movieJson['overview'] = movieEn['overview'];
-            }
-          }
-
-          // Masukkan ke dalam list model
-          movies.add(Movie.fromJson(movieJson));
-        }
-
-        return movies;
+      if (response.statusCode == 200) {
+        final List<dynamic> results = json.decode(response.body)['results'];
+        return results.map((e) => Movie.fromJson(e)).toList();
       } else {
-        throw Exception('Gagal memuat daftar film');
+        throw Exception('Gagal memuat film sedang tayang');
       }
     } catch (e) {
-      print("Error fetching movies: $e");
-      throw Exception('Terjadi kesalahan koneksi');
+      throw Exception('Kesalahan koneksi: $e');
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 2. FITUR PENCARIAN FILM (SEARCH)
-  // ---------------------------------------------------------------------------
-  Future<List<Movie>> searchMovies(String query) async {
+  // 2. AKAN DATANG (Menggunakan endpoint 'upcoming')
+  Future<List<Movie>> fetchUpcomingMovies(String languageCode) async {
     try {
-      final responseIndo = await http.get(
+      String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
+      // Endpoint upcoming berisi film masa depan
+      final response = await http.get(
         Uri.parse(
-          '$_baseUrl/search/movie?api_key=$_apiKey&query=$query&language=id-ID',
-        ),
-      );
-      final responseEn = await http.get(
-        Uri.parse(
-          '$_baseUrl/search/movie?api_key=$_apiKey&query=$query&language=en-US',
+          '$_baseUrl/movie/upcoming?api_key=$_apiKey&language=$apiLang&page=1',
         ),
       );
 
-      if (responseIndo.statusCode == 200 && responseEn.statusCode == 200) {
-        final List<dynamic> resultsIndo = json.decode(
-          responseIndo.body,
-        )['results'];
-        final List<dynamic> resultsEn = json.decode(responseEn.body)['results'];
-
-        List<Movie> movies = [];
-        for (int i = 0; i < resultsIndo.length; i++) {
-          var movieJson = resultsIndo[i];
-
-          if (movieJson['overview'] == null || movieJson['overview'] == "") {
-            var movieEn = resultsEn.firstWhere(
-              (element) => element['id'] == movieJson['id'],
-              orElse: () => null,
-            );
-            if (movieEn != null) {
-              movieJson['overview'] = movieEn['overview'];
-            }
-          }
-          movies.add(Movie.fromJson(movieJson));
-        }
-        return movies;
+      if (response.statusCode == 200) {
+        final List<dynamic> results = json.decode(response.body)['results'];
+        return results.map((e) => Movie.fromJson(e)).toList();
       } else {
-        throw Exception('Gagal mencari film');
+        throw Exception('Gagal memuat film akan datang');
       }
     } catch (e) {
-      print("Error searching movies: $e");
       return [];
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 3. MENGAMBIL TRAILER & GALERI FOTO (DETAIL PAGE) - [BARU]
-  // ---------------------------------------------------------------------------
-  Future<Map<String, dynamic>> fetchMovieGallery(int movieId) async {
+  // 3. SEARCH (Pencarian)
+  Future<List<Movie>> searchMovies(String query, String languageCode) async {
     try {
-      // a. Ambil Video (Trailer)
+      String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
+      final response = await http.get(
+        Uri.parse(
+          '$_baseUrl/search/movie?api_key=$_apiKey&query=$query&language=$apiLang',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> results = json.decode(response.body)['results'];
+        return results.map((e) => Movie.fromJson(e)).toList();
+      } else {
+        throw Exception('Gagal mencari film');
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // 4. FETCH DETAIL (Detail Film)
+  Future<Map<String, dynamic>> fetchMovieDetailExtras(
+    int movieId,
+    String languageCode,
+  ) async {
+    try {
+      String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
+
+      final responseDetail = await http.get(
+        Uri.parse(
+          '$_baseUrl/movie/$movieId?api_key=$_apiKey&language=$apiLang',
+        ),
+      );
       final responseVideo = await http.get(
         Uri.parse('$_baseUrl/movie/$movieId/videos?api_key=$_apiKey'),
       );
-
-      // b. Ambil Gambar (Backdrops/Posters tambahan)
       final responseImages = await http.get(
         Uri.parse('$_baseUrl/movie/$movieId/images?api_key=$_apiKey'),
       );
+      final responseCredits = await http.get(
+        Uri.parse('$_baseUrl/movie/$movieId/credits?api_key=$_apiKey'),
+      );
 
+      String genres = "";
+      String duration = "-";
       String? trailerKey;
       List<String> imageUrls = [];
+      List<Map<String, String>> castList = [];
 
-      // Proses Data Video
+      if (responseDetail.statusCode == 200) {
+        final data = json.decode(responseDetail.body);
+        final List<dynamic> genreList = data['genres'] ?? [];
+        genres = genreList.map((g) => g['name'].toString()).join(", ");
+
+        int runtime = data['runtime'] ?? 0;
+        int hours = runtime ~/ 60;
+        int minutes = runtime % 60;
+        duration = "${hours}j ${minutes}m";
+      }
+
       if (responseVideo.statusCode == 200) {
         final data = json.decode(responseVideo.body);
         final results = data['results'] as List;
-
-        // Cari video yang tipenya 'Trailer' dan situsnya 'YouTube'
         final trailer = results.firstWhere(
           (v) => v['type'] == 'Trailer' && v['site'] == 'YouTube',
           orElse: () => null,
         );
-
-        if (trailer != null) {
-          trailerKey = trailer['key']; // Simpan Key Youtube
-        }
+        if (trailer != null) trailerKey = trailer['key'];
       }
 
-      // Proses Data Gambar
       if (responseImages.statusCode == 200) {
         final data = json.decode(responseImages.body);
         final backdrops = data['backdrops'] as List;
-
-        // Ambil maksimal 5 gambar backdrop
         for (var item in backdrops.take(5)) {
           if (item['file_path'] != null) {
             imageUrls.add(
@@ -159,13 +134,35 @@ class MovieViewModel {
         }
       }
 
+      if (responseCredits.statusCode == 200) {
+        final data = json.decode(responseCredits.body);
+        final cast = data['cast'] as List;
+        for (var c in cast.take(10)) {
+          castList.add({
+            'name': c['name'] ?? 'Unknown',
+            'role': c['character'] ?? '-',
+            'image': c['profile_path'] != null
+                ? 'https://image.tmdb.org/t/p/w200${c['profile_path']}'
+                : '',
+          });
+        }
+      }
+
       return {
-        'trailer': trailerKey, // ID Youtube atau null
-        'images': imageUrls, // List URL gambar tambahan
+        'genres': genres,
+        'duration': duration,
+        'trailer': trailerKey,
+        'images': imageUrls,
+        'cast': castList,
       };
     } catch (e) {
-      print("Error gallery: $e");
-      return {'trailer': null, 'images': []};
+      return {
+        'genres': '',
+        'duration': '-',
+        'trailer': null,
+        'images': [],
+        'cast': [],
+      };
     }
   }
 }

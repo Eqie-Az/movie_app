@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_style.dart';
+import '../viewmodel/auth_service.dart'; // Import AuthService
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -11,31 +12,55 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   bool _isAgreed = false;
   bool _isButtonDisabled = true;
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
     super.initState();
     _nameController.addListener(_validateForm);
     _phoneController.addListener(_validateForm);
+    _passwordController.addListener(_validateForm);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   void _validateForm() {
     setState(() {
       bool isNameValid = _nameController.text.isNotEmpty;
-      // PERBAIKAN: Nomor HP minimal 12 digit
-      bool isPhoneValid = _phoneController.text.length >= 11;
+      bool isPhoneValid = _phoneController.text.length >= 10;
+      bool isPassValid = _passwordController.text.length >= 6;
 
-      _isButtonDisabled = !(isNameValid && isPhoneValid && _isAgreed);
+      _isButtonDisabled =
+          !(isNameValid && isPhoneValid && isPassValid && _isAgreed);
     });
+  }
+
+  void _handleRegister() {
+    // 1. Simpan ke AuthService
+    AuthService.register(
+      _nameController.text,
+      _phoneController.text,
+      _passwordController.text,
+    );
+
+    // 2. Tampilkan Sukses & Kembali
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Pendaftaran Berhasil! Silakan Login."),
+        backgroundColor: Colors.green,
+      ),
+    );
+    Navigator.pop(context); // Kembali ke Login Page
   }
 
   @override
@@ -50,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Daftar TIX ID",
+          "Daftar CinemaTix", // Sudah diubah
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -84,7 +109,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     borderSide: BorderSide(color: AppColors.primary),
                   ),
                 ),
-                style: const TextStyle(fontSize: 16),
               ),
 
               const SizedBox(height: 30),
@@ -104,7 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
-                  hintText: "Masukkan nomor handphone",
+                  hintText: "81234567890",
                   hintStyle: TextStyle(
                     color: Colors.grey.shade300,
                     fontWeight: FontWeight.normal,
@@ -119,6 +143,42 @@ class _RegisterPageState extends State<RegisterPage> {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              const Text(
+                "PASSWORD",
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _passwordController,
+                obscureText: !_isPasswordVisible,
+                decoration: InputDecoration(
+                  hintText: "Minimal 6 karakter",
+                  hintStyle: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Colors.black,
+                    ),
+                    onPressed: () => setState(
+                      () => _isPasswordVisible = !_isPasswordVisible,
+                    ),
+                  ),
                 ),
               ),
 
@@ -144,29 +204,26 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: RichText(
-                      text: TextSpan(
+                      text: const TextSpan(
                         text: "Dengan melanjutkan, kamu menyetujui ",
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.black, fontSize: 14),
                         children: [
                           TextSpan(
                             text: "Syarat & Ketentuan",
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const TextSpan(text: " serta "),
+                          TextSpan(text: " serta "),
                           TextSpan(
                             text: "Kebijakan Privasi",
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const TextSpan(text: " TIX ID."),
+                          TextSpan(text: " CinemaTix."), // Sudah diubah
                         ],
                       ),
                     ),
@@ -180,25 +237,17 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _isButtonDisabled
-                      ? null
-                      : () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Pendaftaran Berhasil!"),
-                            ),
-                          );
-                        },
+                  onPressed: _isButtonDisabled ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade500,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  // [PERBAIKAN UTAMA DI SINI]
                   child: const Text(
-                    "Daftar TIX ID",
+                    "Daftar CinemaTix",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

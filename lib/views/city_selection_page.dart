@@ -27,6 +27,7 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
     "BOGOR",
     "JAKARTA",
     "MALANG",
+    "MEDAN",
     "SURABAYA",
     "YOGYAKARTA",
   ];
@@ -39,7 +40,7 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        throw 'GPS mati. Silakan nyalakan GPS di pengaturan emulator/HP.';
+        throw 'GPS mati. Silakan nyalakan GPS.';
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
@@ -53,17 +54,12 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
         throw 'Izin lokasi ditolak permanen.';
       }
 
-      // --- PERBAIKAN UTAMA DI SINI ---
-      // Kita tambahkan .timeout() agar tidak menunggu selamanya
       Position position =
           await Geolocator.getCurrentPosition(
-            desiredAccuracy:
-                LocationAccuracy.medium, // Ganti ke medium biar lebih cepat
+            desiredAccuracy: LocationAccuracy.medium,
           ).timeout(
-            const Duration(seconds: 20),
-            onTimeout: () {
-              throw 'Waktu habis! Gagal mendapatkan sinyal GPS.';
-            },
+            const Duration(seconds: 10),
+            onTimeout: () => throw 'Gagal mendapatkan lokasi. Coba lagi.',
           );
 
       List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -74,10 +70,14 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
       if (placemarks.isNotEmpty) {
         String city =
             placemarks[0].subAdministrativeArea ?? "Lokasi Tidak Dikenal";
+
+        // [UPDATE PENTING] Membersihkan nama kota agar sesuai Database
         city = city
-            .replaceAll("Kota ", "")
-            .replaceAll("Kabupaten ", "")
-            .toUpperCase();
+            .toUpperCase() // Ubah ke huruf besar dulu
+            .replaceAll("KOTA ", "") // Hapus prefix Indo
+            .replaceAll("KABUPATEN ", "")
+            .replaceAll(" CITY", "") // Hapus suffix Inggris (PENTING)
+            .trim(); // Hapus spasi sisa
 
         if (mounted) {
           Navigator.pop(context, city);
@@ -113,12 +113,54 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Masukkan Kata Kunci",
-          style: TextStyle(color: Colors.grey, fontSize: 16),
+          "Pilih Kota",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Column(
         children: [
+          // Tombol Gunakan Lokasi Saya
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: _isLoading ? null : _getCurrentLocation,
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.my_location, color: Colors.white),
+                label: Text(
+                  _isLoading ? "Mencari Lokasi..." : "Gunakan Lokasi Saya",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // List Kota Manual
           Expanded(
             child: ListView.separated(
               itemCount: cities.length,
@@ -132,39 +174,6 @@ class _CitySelectionPageState extends State<CitySelectionPage> {
                   onTap: () => Navigator.pop(context, cities[index]),
                 );
               },
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: _isLoading ? null : _getCurrentLocation,
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        "Gunakan Lokasi Saya",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
             ),
           ),
         ],
