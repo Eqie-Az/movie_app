@@ -12,7 +12,7 @@ class MovieService {
   }
 
   // --- API REQUESTS ---
-
+  //https://api.themoviedb.org/3/movie/now_playing?api_key=3a8b66ce7b80e698cfa26e6104b598d2&language=en-US&page=1
   // 1. Fetch Now Playing
   Future<List<Movie>> getNowPlayingMovies(String languageCode) async {
     String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
@@ -31,6 +31,7 @@ class MovieService {
   }
 
   // 2. Fetch Upcoming
+  //https://api.themoviedb.org/3/movie/upcoming?api_key=3a8b66ce7b80e698cfa26e6104b598d2&language=en-US&page=1
   Future<List<Movie>> getUpcomingMovies(String languageCode) async {
     String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
     final response = await http.get(
@@ -48,6 +49,7 @@ class MovieService {
   }
 
   // 3. Search Movies
+  //https://api.themoviedb.org/3/search/movie?api_key=3a8b66ce7b80e698cfa26e6104b598d2&query=Avengers&language=en-US
   Future<List<Movie>> searchMovies(String query, String languageCode) async {
     String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
     final response = await http.get(
@@ -106,6 +108,7 @@ class MovieService {
         if (trailer != null) trailerKey = trailer['key'];
       }
 
+      //https://api.themoviedb.org/3/movie/550/credits?api_key=3a8b66ce7b80e698cfa26e6104b598d2
       if (responseCredits.statusCode == 200) {
         final data = json.decode(responseCredits.body);
         final cast = data['cast'] as List;

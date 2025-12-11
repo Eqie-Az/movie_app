@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/language_provider.dart';
-import '../../providers/movie_provider.dart'; // [GANTI] ViewModel ke Provider
+import '../../providers/movie_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../models/movie.dart';
@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const HomePageContent(),
     const CinemaPage(),
-    const TicketHistoryPage(), // Pastikan import ticket/history.dart benar
+    const TicketHistoryPage(),
   ];
 
   @override
@@ -80,7 +80,6 @@ class HomePageContent extends StatefulWidget {
 }
 
 class _HomePageContentState extends State<HomePageContent> {
-  // [UPDATE] Gunakan Provider, bukan ViewModel
   final MovieProvider _movieProvider = MovieProvider();
   final TextEditingController _searchController = TextEditingController();
 
@@ -89,8 +88,7 @@ class _HomePageContentState extends State<HomePageContent> {
   String _currentCity = "MALANG";
   String _lastLanguageCode = '';
   int _selectedFilterIndex = 0;
-  final Set<int> _watchlist =
-      {}; // Simpanan sementara (bisa dipindah ke UserProvider nanti)
+  final Set<int> _watchlist = {};
 
   @override
   void didChangeDependencies() {
@@ -98,7 +96,6 @@ class _HomePageContentState extends State<HomePageContent> {
     final languageCode = Provider.of<LanguageProvider>(
       context,
     ).currentLocale.languageCode;
-    // Cek perubahan bahasa untuk fetch ulang data
     if (_lastLanguageCode != languageCode) {
       _lastLanguageCode = languageCode;
       _loadData();
@@ -107,7 +104,6 @@ class _HomePageContentState extends State<HomePageContent> {
 
   void _loadData() {
     setState(() {
-      // Logika fetch ada di Provider -> Service
       _moviesFuture = _movieProvider.fetchMovies(_lastLanguageCode);
     });
   }
@@ -121,7 +117,6 @@ class _HomePageContentState extends State<HomePageContent> {
     } else {
       setState(() {
         _isSearching = true;
-        // Logika search ada di Provider -> Service
         _moviesFuture = _movieProvider.searchMovies(query, _lastLanguageCode);
       });
     }
@@ -135,12 +130,10 @@ class _HomePageContentState extends State<HomePageContent> {
     if (result != null) setState(() => _currentCity = result);
   }
 
-  // Logika Filter UI (Client-side filtering)
   List<Movie> _applyFilter(List<Movie> movies) {
     if (_selectedFilterIndex == 0) return movies;
     return movies.where((movie) {
       if (_selectedFilterIndex == 4) return _watchlist.contains(movie.id);
-      // Dummy logic untuk filter bioskop (karena API film tidak return bioskop)
       if (_selectedFilterIndex == 1) return movie.id % 3 == 0;
       if (_selectedFilterIndex == 2) return movie.id % 3 == 1;
       if (_selectedFilterIndex == 3) return movie.id % 3 == 2;
@@ -195,7 +188,6 @@ class _HomePageContentState extends State<HomePageContent> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            // Header Search & Profile
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -277,7 +269,6 @@ class _HomePageContentState extends State<HomePageContent> {
                     child: Column(
                       children: [
                         const SizedBox(height: 10),
-                        // Section Header
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Row(
@@ -329,6 +320,39 @@ class _HomePageContentState extends State<HomePageContent> {
                           _buildCinemaFilters(isIndo),
                         ],
                         const SizedBox(height: 15),
+
+                        // [UPDATE] Logika Tampilan Kosong (Empty State)
+                        if (filteredMovies.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(30.0),
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    // Jika filter Watchlist (index 4), pakai ikon hati
+                                    _selectedFilterIndex == 4
+                                        ? Icons.favorite_border
+                                        : Icons.movie_filter_outlined,
+                                    size: 50,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    // [PESAN KHUSUS WATCHLIST]
+                                    _selectedFilterIndex == 4
+                                        ? (isIndo
+                                              ? "Daftar watchlist belum ditambahkan"
+                                              : "Your watchlist is empty")
+                                        : (isIndo
+                                              ? "Tidak ada film di kategori ini"
+                                              : "No movies in this category"),
+                                    style: const TextStyle(color: Colors.grey),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
 
                         // Horizontal List
                         if (!_isSearching && filteredMovies.isNotEmpty)
@@ -407,7 +431,6 @@ class _HomePageContentState extends State<HomePageContent> {
     );
   }
 
-  // --- Helper Widgets ---
   Widget _buildSearchBar(bool isIndo) => Container(
     height: 45,
     decoration: BoxDecoration(
