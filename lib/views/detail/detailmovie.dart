@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/movie.dart';
 import '../../theme/app_style.dart';
-import '../../providers/movie_provider.dart'; // Import Provider
+import '../../providers/movie_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/user_provider.dart';
 import '../booking/seat_selection.dart';
@@ -20,8 +20,7 @@ class DetailMoviePage extends StatefulWidget {
 
 class _DetailMoviePageState extends State<DetailMoviePage>
     with SingleTickerProviderStateMixin {
-  // Gunakan MovieProvider untuk mengambil data detail
-  final MovieProvider _movieProvider = MovieProvider();
+  final MovieProvider _movieProvider = MovieProvider(); // Instance Provider
   late TabController _tabController;
 
   String _genreText = "";
@@ -32,7 +31,7 @@ class _DetailMoviePageState extends State<DetailMoviePage>
   bool _isDataLoaded = false;
 
   int _selectedDateIndex = 0;
-  List<Map<String, dynamic>> _dateList = [];
+  List<Map<String, dynamic>> _dateList = []; // Data akan diisi dari Provider
   bool _isWatchlisted = false;
 
   @override
@@ -44,9 +43,25 @@ class _DetailMoviePageState extends State<DetailMoviePage>
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _generateDates();
-      _loadDetailData();
+      _initData(); // Panggil fungsi inisialisasi
     });
+  }
+
+  // Fungsi baru untuk inisialisasi data via Provider
+  void _initData() {
+    final isIndo =
+        Provider.of<LanguageProvider>(
+          context,
+          listen: false,
+        ).currentLocale.languageCode ==
+        'id';
+
+    // [UPDATE] Ambil tanggal dari Provider, bukan hitung sendiri di sini
+    setState(() {
+      _dateList = _movieProvider.generateDateList(isIndo);
+    });
+
+    _loadDetailData();
   }
 
   @override
@@ -55,104 +70,7 @@ class _DetailMoviePageState extends State<DetailMoviePage>
     super.dispose();
   }
 
-  void _generateDates() {
-    DateTime now = DateTime.now();
-    List<Map<String, dynamic>> tempDates = [];
-    final isIndo =
-        Provider.of<LanguageProvider>(
-          context,
-          listen: false,
-        ).currentLocale.languageCode ==
-        'id';
-
-    List<String> months = isIndo
-        ? [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "Mei",
-            "Jun",
-            "Jul",
-            "Agu",
-            "Sep",
-            "Okt",
-            "Nov",
-            "Des",
-          ]
-        : [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ];
-
-    for (int i = 0; i < 7; i++) {
-      DateTime date = now.add(Duration(days: i));
-      String dayName = i == 0
-          ? (isIndo ? "HARI INI" : "TODAY")
-          : _getDayName(date.weekday, isIndo);
-
-      tempDates.add({
-        "label": "${date.day} ${months[date.month - 1]}\n$dayName",
-        "dateObj": date,
-        "enabled": true,
-      });
-    }
-    setState(() {
-      _dateList = tempDates;
-    });
-  }
-
-  String _getDayName(int day, bool isIndo) {
-    if (isIndo) {
-      switch (day) {
-        case 1:
-          return "SEN";
-        case 2:
-          return "SEL";
-        case 3:
-          return "RAB";
-        case 4:
-          return "KAM";
-        case 5:
-          return "JUM";
-        case 6:
-          return "SAB";
-        case 7:
-          return "MIN";
-        default:
-          return "";
-      }
-    } else {
-      switch (day) {
-        case 1:
-          return "MON";
-        case 2:
-          return "TUE";
-        case 3:
-          return "WED";
-        case 4:
-          return "THU";
-        case 5:
-          return "FRI";
-        case 6:
-          return "SAT";
-        case 7:
-          return "SUN";
-        default:
-          return "";
-      }
-    }
-  }
+  // [HAPUS] Fungsi _generateDates dan _getDayName sudah dipindah ke Provider
 
   void _loadDetailData() async {
     final languageCode = Provider.of<LanguageProvider>(
@@ -181,7 +99,6 @@ class _DetailMoviePageState extends State<DetailMoviePage>
         _durationText = data['duration'] ?? "-";
         _trailerKey = data['trailer'];
 
-        // [UPDATE] Konversi data cast dengan aman untuk menghindari error String?
         _castList = (data['cast'] as List).map((item) {
           return {
             'name': item['name']?.toString() ?? "Unknown",
@@ -232,6 +149,7 @@ class _DetailMoviePageState extends State<DetailMoviePage>
       if (cinemaName != null && time != null) {
         DateTime selectedDate = _dateList[_selectedDateIndex]['dateObj'];
 
+        // Format tanggal sederhana untuk dikirim ke halaman booking
         List<String> monthsFull = isIndo
             ? [
                 "Januari",
@@ -293,7 +211,7 @@ class _DetailMoviePageState extends State<DetailMoviePage>
               cinemaName: cinemaName,
               time: time,
               date: formattedDate,
-              posterPath: widget.movie.posterPath, // [UPDATE] Kirim data poster
+              posterPath: widget.movie.posterPath,
             ),
           ),
         );
@@ -322,7 +240,10 @@ class _DetailMoviePageState extends State<DetailMoviePage>
         Provider.of<LanguageProvider>(context).currentLocale.languageCode ==
         'id';
 
-    if (_dateList.isEmpty) _generateDates();
+    // Pastikan _dateList terisi jika kosong (misal saat hot reload)
+    if (_dateList.isEmpty) {
+      _dateList = _movieProvider.generateDateList(isIndo);
+    }
 
     String buttonText;
     VoidCallback? buttonAction;
@@ -439,6 +360,7 @@ class _DetailMoviePageState extends State<DetailMoviePage>
   }
 
   // --- WIDGETS ---
+  // (Bagian Widget tidak berubah, tetap sama seperti sebelumnya)
 
   Widget _buildVideoHeader() {
     return Stack(
@@ -689,8 +611,6 @@ class _DetailMoviePageState extends State<DetailMoviePage>
 
   Widget _buildSynopsisTab(bool isIndo) {
     String synopsisContent = widget.movie.overview;
-
-    // [UPDATE] Logika jika sinopsis kosong
     if (synopsisContent.isEmpty) {
       synopsisContent = isIndo
           ? "Sinopsis dalam Bahasa Indonesia tidak tersedia."
@@ -751,7 +671,6 @@ class _DetailMoviePageState extends State<DetailMoviePage>
   }
 
   Widget _buildCastItem(Map<String, String> cast) {
-    // Handling null dengan nilai default agar tidak error String?
     String name = cast['name'] ?? "Unknown";
     String role = cast['role'] ?? "-";
     String image = cast['image'] ?? "";

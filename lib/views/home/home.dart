@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// [UPDATE IMPORT] Mengarah ke folder providers & models yang baru
 import '../../providers/language_provider.dart';
-import '../../providers/movie_provider.dart'; // Ganti ViewModel jadi Provider
+import '../../providers/movie_provider.dart'; // [GANTI] ViewModel ke Provider
 import '../../providers/notification_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../models/movie.dart';
 import '../../theme/app_style.dart';
 
-// [UPDATE IMPORT] Mengarah ke folder views yang sudah dirapikan
 import '../detail/detailmovie.dart';
-import 'listmovie.dart'; // Satu folder (home)
+import 'listmovie.dart';
 import '../profile/profile_page.dart';
-import '../ticket/history.dart';
-import 'city_selection_page.dart'; // Satu folder (home)
-import 'cinema_page.dart'; // Satu folder (home)
+import 'city_selection_page.dart';
+import 'cinema_page.dart';
 import '../notification/notification_page.dart';
 import '../auth/login_page.dart';
+import '../ticket/history.dart';
 
 class HomePage extends StatefulWidget {
   final int initialIndex;
-
   const HomePage({super.key, this.initialIndex = 0});
 
   @override
@@ -34,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const HomePageContent(),
     const CinemaPage(),
-    const TicketHistoryPage(),
+    const TicketHistoryPage(), // Pastikan import ticket/history.dart benar
   ];
 
   @override
@@ -78,13 +75,12 @@ class _HomePageState extends State<HomePage> {
 
 class HomePageContent extends StatefulWidget {
   const HomePageContent({super.key});
-
   @override
   State<HomePageContent> createState() => _HomePageContentState();
 }
 
 class _HomePageContentState extends State<HomePageContent> {
-  // [UPDATE] Gunakan MovieProvider
+  // [UPDATE] Gunakan Provider, bukan ViewModel
   final MovieProvider _movieProvider = MovieProvider();
   final TextEditingController _searchController = TextEditingController();
 
@@ -93,7 +89,8 @@ class _HomePageContentState extends State<HomePageContent> {
   String _currentCity = "MALANG";
   String _lastLanguageCode = '';
   int _selectedFilterIndex = 0;
-  final Set<int> _watchlist = {};
+  final Set<int> _watchlist =
+      {}; // Simpanan sementara (bisa dipindah ke UserProvider nanti)
 
   @override
   void didChangeDependencies() {
@@ -101,7 +98,7 @@ class _HomePageContentState extends State<HomePageContent> {
     final languageCode = Provider.of<LanguageProvider>(
       context,
     ).currentLocale.languageCode;
-
+    // Cek perubahan bahasa untuk fetch ulang data
     if (_lastLanguageCode != languageCode) {
       _lastLanguageCode = languageCode;
       _loadData();
@@ -110,6 +107,7 @@ class _HomePageContentState extends State<HomePageContent> {
 
   void _loadData() {
     setState(() {
+      // Logika fetch ada di Provider -> Service
       _moviesFuture = _movieProvider.fetchMovies(_lastLanguageCode);
     });
   }
@@ -123,6 +121,7 @@ class _HomePageContentState extends State<HomePageContent> {
     } else {
       setState(() {
         _isSearching = true;
+        // Logika search ada di Provider -> Service
         _moviesFuture = _movieProvider.searchMovies(query, _lastLanguageCode);
       });
     }
@@ -136,10 +135,12 @@ class _HomePageContentState extends State<HomePageContent> {
     if (result != null) setState(() => _currentCity = result);
   }
 
+  // Logika Filter UI (Client-side filtering)
   List<Movie> _applyFilter(List<Movie> movies) {
     if (_selectedFilterIndex == 0) return movies;
     return movies.where((movie) {
       if (_selectedFilterIndex == 4) return _watchlist.contains(movie.id);
+      // Dummy logic untuk filter bioskop (karena API film tidak return bioskop)
       if (_selectedFilterIndex == 1) return movie.id % 3 == 0;
       if (_selectedFilterIndex == 2) return movie.id % 3 == 1;
       if (_selectedFilterIndex == 3) return movie.id % 3 == 2;
@@ -183,10 +184,10 @@ class _HomePageContentState extends State<HomePageContent> {
   @override
   Widget build(BuildContext context) {
     final isIndo = _lastLanguageCode == 'id';
+    final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn;
     final notifCount = Provider.of<NotificationProvider>(
       context,
     ).notificationCount;
-    final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -194,6 +195,7 @@ class _HomePageContentState extends State<HomePageContent> {
         child: Column(
           children: [
             const SizedBox(height: 10),
+            // Header Search & Profile
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -255,20 +257,27 @@ class _HomePageContentState extends State<HomePageContent> {
                 ],
               ),
             ),
+
             if (!_isSearching) _buildLocationBar(),
+
             Expanded(
               child: FutureBuilder<List<Movie>>(
                 future: _moviesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting)
                     return const Center(child: CircularProgressIndicator());
+                  if (snapshot.hasError)
+                    return Center(child: Text("Error: ${snapshot.error}"));
                   if (!snapshot.hasData || snapshot.data!.isEmpty)
                     return const Center(child: Text("No Data"));
+
                   final filteredMovies = _applyFilter(snapshot.data!);
+
                   return SingleChildScrollView(
                     child: Column(
                       children: [
                         const SizedBox(height: 10),
+                        // Section Header
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Row(
@@ -314,11 +323,14 @@ class _HomePageContentState extends State<HomePageContent> {
                             ],
                           ),
                         ),
+
                         if (!_isSearching) ...[
                           const SizedBox(height: 10),
                           _buildCinemaFilters(isIndo),
                         ],
                         const SizedBox(height: 15),
+
+                        // Horizontal List
                         if (!_isSearching && filteredMovies.isNotEmpty)
                           SizedBox(
                             height: 320,
@@ -338,6 +350,8 @@ class _HomePageContentState extends State<HomePageContent> {
                             ),
                           ),
                         const SizedBox(height: 20),
+
+                        // Vertical Grid
                         if (!_isSearching && filteredMovies.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -393,7 +407,7 @@ class _HomePageContentState extends State<HomePageContent> {
     );
   }
 
-  // (Helper widgets seperti _buildSearchBar, _buildLocationBar dll, copy dari kode sebelumnya, hanya perbaiki impornya)
+  // --- Helper Widgets ---
   Widget _buildSearchBar(bool isIndo) => Container(
     height: 45,
     decoration: BoxDecoration(
@@ -425,6 +439,7 @@ class _HomePageContentState extends State<HomePageContent> {
       ),
     ),
   );
+
   Widget _buildLocationBar() => GestureDetector(
     onTap: _changeCity,
     child: Container(
@@ -444,6 +459,7 @@ class _HomePageContentState extends State<HomePageContent> {
       ),
     ),
   );
+
   Widget _buildCinemaFilters(bool isIndo) {
     final cinemas = [
       isIndo ? "Semua Film" : "All Movies",

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
 import '../auth/login_page.dart';
-import '../../providers/movie_provider.dart'; // [UPDATE] Menggunakan Provider
+import '../../providers/movie_provider.dart'; // Import Provider
 import '../../providers/language_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../models/movie.dart';
@@ -19,75 +19,17 @@ class CinemaDetailPage extends StatefulWidget {
 }
 
 class _CinemaDetailPageState extends State<CinemaDetailPage> {
-  // [UPDATE] Menggunakan MovieProvider untuk mengambil data
   final MovieProvider _movieProvider = MovieProvider();
 
   int _selectedDateIndex = 0;
-
-  // Variabel untuk menyimpan tiket yang dipilih (termasuk posterPath)
   Map<String, dynamic>? _selectedTicket;
 
+  // Data dari Provider
   Future<List<Movie>>? _moviesFuture;
+  List<Map<String, dynamic>> _dateList = [];
+  List<String> _showTimes = [];
+
   String _lastLanguageCode = '';
-
-  // --- Helper Tanggal Dinamis ---
-  DateTime _getDateByIndex(int index) {
-    return DateTime.now().add(Duration(days: index));
-  }
-
-  String _formatDate(DateTime date, bool isIndo) {
-    List<String> monthsIndo = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "Mei",
-      "Jun",
-      "Jul",
-      "Agu",
-      "Sep",
-      "Okt",
-      "Nov",
-      "Des",
-    ];
-    List<String> monthsEng = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    String day = date.day.toString();
-    String month = isIndo
-        ? monthsIndo[date.month - 1]
-        : monthsEng[date.month - 1];
-    String year = date.year.toString();
-
-    return "$day $month $year";
-  }
-
-  String _getDayName(DateTime date, bool isIndo) {
-    List<String> daysIndo = [
-      "Senin",
-      "Selasa",
-      "Rabu",
-      "Kamis",
-      "Jumat",
-      "Sabtu",
-      "Minggu",
-    ];
-    List<String> daysEng = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    return isIndo ? daysIndo[date.weekday - 1] : daysEng[date.weekday - 1];
-  }
-  // -----------------------------
 
   @override
   void didChangeDependencies() {
@@ -96,11 +38,14 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
       context,
     ).currentLocale.languageCode;
 
-    // Fetch data hanya jika bahasa berubah
     if (_lastLanguageCode != languageCode) {
       _lastLanguageCode = languageCode;
-      // Menggunakan Provider untuk mengambil data film (Simulasi jadwal tayang)
+      final isIndo = languageCode == 'id';
+
+      // [UPDATE] Ambil logika bisnis dari Provider
       _moviesFuture = _movieProvider.fetchMovies(languageCode);
+      _dateList = _movieProvider.generateDateList(isIndo);
+      _showTimes = _movieProvider.getShowTimes();
     }
   }
 
@@ -133,11 +78,12 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
       );
     } else {
       if (_selectedTicket != null) {
-        // Generate tanggal lengkap untuk dikirim
-        DateTime selectedDateObj = _getDateByIndex(_selectedDateIndex);
-        String dayName = _getDayName(selectedDateObj, isIndo);
-        String fullDate = _formatDate(selectedDateObj, isIndo);
-        String finalDateString = "$dayName, $fullDate";
+        DateTime selectedDateObj = _dateList[_selectedDateIndex]['dateObj'];
+        // [UPDATE] Format tanggal pakai logika Provider
+        String finalDateString = _movieProvider.formatDate(
+          selectedDateObj,
+          isIndo,
+        );
 
         Navigator.push(
           context,
@@ -147,8 +93,7 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
               cinemaName: widget.cinemaData['name'],
               time: _selectedTicket!['time'],
               date: finalDateString,
-              posterPath:
-                  _selectedTicket!['posterPath'], // [PENTING] Kirim URL Poster
+              posterPath: _selectedTicket!['posterPath'],
             ),
           ),
         );
@@ -173,6 +118,12 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
         Provider.of<LanguageProvider>(context).currentLocale.languageCode ==
         'id';
     bool isTicketSelected = _selectedTicket != null;
+
+    // Pastikan dateList terisi jika pertama kali load
+    if (_dateList.isEmpty) {
+      _dateList = _movieProvider.generateDateList(isIndo);
+      _showTimes = _movieProvider.getShowTimes();
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -294,27 +245,7 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                   ),
                   const Divider(thickness: 1, height: 1),
 
-                  // MENU MAKANAN (Opsional)
-                  ListTile(
-                    leading: const Icon(Icons.fastfood, color: Colors.orange),
-                    title: Text(
-                      isIndo
-                          ? "Pesan Makanan & Minuman"
-                          : "Order Food & Beverage",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey,
-                    ),
-                    onTap: () {},
-                  ),
-                  const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
-
-                  // JADWAL TANGGAL (REAL TIME)
+                  // JADWAL TANGGAL (Data dari Provider)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: SizedBox(
@@ -322,48 +253,10 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: 7,
+                        itemCount: _dateList.length,
                         itemBuilder: (context, index) {
                           bool isSelected = index == _selectedDateIndex;
-                          DateTime date = _getDateByIndex(index);
-
-                          String dayNum = date.day.toString();
-                          List<String> monthsShort = isIndo
-                              ? [
-                                  "Jan",
-                                  "Feb",
-                                  "Mar",
-                                  "Apr",
-                                  "Mei",
-                                  "Jun",
-                                  "Jul",
-                                  "Agu",
-                                  "Sep",
-                                  "Okt",
-                                  "Nov",
-                                  "Des",
-                                ]
-                              : [
-                                  "Jan",
-                                  "Feb",
-                                  "Mar",
-                                  "Apr",
-                                  "May",
-                                  "Jun",
-                                  "Jul",
-                                  "Aug",
-                                  "Sep",
-                                  "Oct",
-                                  "Nov",
-                                  "Dec",
-                                ];
-                          String monthName = monthsShort[date.month - 1];
-                          String dayName = index == 0
-                              ? (isIndo ? "HARI INI" : "TODAY")
-                              : _getDayName(
-                                  date,
-                                  isIndo,
-                                ).toUpperCase().substring(0, 3);
+                          final dateItem = _dateList[index];
 
                           return GestureDetector(
                             onTap: () =>
@@ -384,7 +277,7 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                               ),
                               child: Center(
                                 child: Text(
-                                  "$dayNum $monthName\n$dayName",
+                                  dateItem['label'],
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 12,
@@ -403,7 +296,7 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                   ),
                   const Divider(thickness: 1, height: 1),
 
-                  // LIST FILM (DARI PROVIDER)
+                  // LIST FILM
                   FutureBuilder<List<Movie>>(
                     future: _moviesFuture,
                     builder: (context, snapshot) {
@@ -412,15 +305,9 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                           padding: EdgeInsets.all(20.0),
                           child: Center(child: CircularProgressIndicator()),
                         );
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text(
-                            isIndo
-                                ? "Gagal memuat film"
-                                : "Failed to load movies",
-                          ),
-                        );
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      } else if (snapshot.hasError ||
+                          !snapshot.hasData ||
+                          snapshot.data!.isEmpty) {
                         return Center(
                           child: Text(
                             isIndo ? "Tidak ada jadwal" : "No schedule",
@@ -446,7 +333,7 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
             ),
           ),
 
-          // TOMBOL BELI TIKET (STICKY BOTTOM)
+          // TOMBOL BELI TIKET
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -493,20 +380,16 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
   }
 
   Widget _buildMovieItem(Movie movie, bool isIndo) {
-    final List<String> showTimes = ["12:05", "14:20", "16:35", "19:00"];
-
     return Column(
       children: [
         // INFO FILM
         InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DetailMoviePage(movie: movie),
-              ),
-            );
-          },
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailMoviePage(movie: movie),
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -546,7 +429,6 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // Rating & Info
                       Row(
                         children: [
                           const Icon(Icons.star, color: Colors.amber, size: 14),
@@ -588,7 +470,7 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
 
         const SizedBox(height: 10),
 
-        // JADWAL JAM
+        // JADWAL JAM (Data diambil dari Provider -> _showTimes)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -614,14 +496,13 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children: showTimes.map((time) {
+                children: _showTimes.map((time) {
                   bool isSelected =
                       _selectedTicket != null &&
                       _selectedTicket!['movieId'] == movie.id &&
                       _selectedTicket!['time'] == time;
                   return GestureDetector(
                     onTap: () => setState(() {
-                      // [PENTING] Simpan data tiket termasuk Poster
                       _selectedTicket = {
                         'movieId': movie.id,
                         'title': movie.title,

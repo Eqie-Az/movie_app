@@ -6,6 +6,13 @@ class MovieService {
   static const String _apiKey = '3a8b66ce7b80e698cfa26e6104b598d2';
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
+  // [BARU] Simulasi Data Jadwal Tayang (Dipindahkan dari UI agar bersih)
+  List<String> getCinemaShowtimes() {
+    return ["12:05", "14:20", "16:35", "19:00"];
+  }
+
+  // --- API REQUESTS ---
+
   // 1. Fetch Now Playing
   Future<List<Movie>> getNowPlayingMovies(String languageCode) async {
     String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
@@ -23,7 +30,7 @@ class MovieService {
     }
   }
 
-  // 2. [BARU] Fetch Upcoming (Tambahkan ini!)
+  // 2. Fetch Upcoming
   Future<List<Movie>> getUpcomingMovies(String languageCode) async {
     String apiLang = languageCode == 'id' ? 'id-ID' : 'en-US';
     final response = await http.get(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/language_provider.dart';
-import '../../providers/movie_provider.dart'; // [PENTING] Import Provider Baru
+import '../../providers/movie_provider.dart'; // [GANTI] ViewModel ke Provider
 import '../../models/movie.dart';
 import '../../theme/app_style.dart';
 import '../detail/detailmovie.dart';
@@ -14,28 +14,22 @@ class ListMoviePage extends StatefulWidget {
 }
 
 class _ListMoviePageState extends State<ListMoviePage> {
-  // [UPDATE] Gunakan MovieProvider
+  // [UPDATE] Gunakan Provider
   final MovieProvider _movieProvider = MovieProvider();
-
-  // Dua Future terpisah agar data tidak tercampur
-  Future<List<Movie>>? _nowPlayingFuture; // Untuk Tab "Sedang Tayang"
-  Future<List<Movie>>? _upcomingFuture; // Untuk Tab "Akan Datang"
-
+  Future<List<Movie>>? _nowPlayingFuture;
+  Future<List<Movie>>? _upcomingFuture;
   String _lastLanguageCode = '';
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     final languageCode = Provider.of<LanguageProvider>(
       context,
     ).currentLocale.languageCode;
-
-    // Load data hanya jika bahasa berubah atau data belum ada
     if (_lastLanguageCode != languageCode) {
       _lastLanguageCode = languageCode;
       setState(() {
-        // [PENTING] Panggil fungsi provider yang berbeda untuk setiap kategori
+        // Fetch data via Provider -> Service
         _nowPlayingFuture = _movieProvider.fetchMovies(languageCode);
         _upcomingFuture = _movieProvider.fetchUpcomingMovies(languageCode);
       });
@@ -62,13 +56,8 @@ class _ListMoviePageState extends State<ListMoviePage> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              }
-            },
+            onPressed: () => Navigator.pop(context),
           ),
-          // TAB BAR
           bottom: TabBar(
             labelColor: AppColors.primary,
             unselectedLabelColor: Colors.grey,
@@ -86,10 +75,7 @@ class _ListMoviePageState extends State<ListMoviePage> {
         ),
         body: TabBarView(
           children: [
-            // TAB 1: SEDANG TAYANG
             _buildMovieGrid(_nowPlayingFuture, isIndo),
-
-            // TAB 2: AKAN DATANG
             _buildMovieGrid(_upcomingFuture, isIndo),
           ],
         ),
@@ -97,29 +83,24 @@ class _ListMoviePageState extends State<ListMoviePage> {
     );
   }
 
-  // Widget Helper Grid (Reusable)
   Widget _buildMovieGrid(Future<List<Movie>>? future, bool isIndo) {
     return FutureBuilder<List<Movie>>(
       future: future,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting)
           return const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           );
-        } else if (snapshot.hasError) {
+        if (snapshot.hasError)
           return Center(
             child: Text(
               isIndo
                   ? "Gagal memuat: ${snapshot.error}"
                   : "Failed to load: ${snapshot.error}",
-              textAlign: TextAlign.center,
             ),
           );
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty)
           return Center(child: Text(isIndo ? "Tidak ada film." : "No movies."));
-        }
-
-        final movies = snapshot.data!;
 
         return GridView.builder(
           padding: const EdgeInsets.all(16),
@@ -129,22 +110,19 @@ class _ListMoviePageState extends State<ListMoviePage> {
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
-          itemCount: movies.length,
+          itemCount: snapshot.data!.length,
           itemBuilder: (context, index) {
-            final movie = movies[index];
+            final movie = snapshot.data![index];
             return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DetailMoviePage(movie: movie),
-                  ),
-                );
-              },
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetailMoviePage(movie: movie),
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Poster
                   Expanded(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -152,7 +130,7 @@ class _ListMoviePageState extends State<ListMoviePage> {
                         movie.posterPath,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        errorBuilder: (_, __, ___) => Container(
                           color: Colors.grey[300],
                           child: const Icon(Icons.broken_image),
                         ),
@@ -160,8 +138,6 @@ class _ListMoviePageState extends State<ListMoviePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-
-                  // Judul
                   Text(
                     movie.title,
                     style: const TextStyle(
@@ -171,8 +147,6 @@ class _ListMoviePageState extends State<ListMoviePage> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-
-                  // Rating
                   const SizedBox(height: 4),
                   Row(
                     children: [
