@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_style.dart';
-import 'login_page.dart';
-import '../viewmodel/movie_viewmodel.dart';
-import '../viewmodel/language_provider.dart';
-import '../viewmodel/user_provider.dart';
-import '../model/movie.dart';
+import '../../theme/app_style.dart';
+import '../auth/login_page.dart';
+import '../../viewmodel/movie_viewmodel.dart';
+import '../../viewmodel/language_provider.dart';
+import '../../viewmodel/user_provider.dart';
+import '../../models/movie.dart';
 import 'detailmovie.dart';
-import 'booking/seat_selection.dart';
+import '../booking/seat_selection.dart';
 
 class CinemaDetailPage extends StatefulWidget {
   final Map<String, dynamic> cinemaData;

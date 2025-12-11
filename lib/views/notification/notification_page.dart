@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_style.dart';
-import '../viewmodel/language_provider.dart';
-import '../viewmodel/notification_provider.dart';
+import '../../theme/app_style.dart';
+import '../../viewmodel/language_provider.dart';
+import '../../viewmodel/notification_provider.dart';
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({super.key});

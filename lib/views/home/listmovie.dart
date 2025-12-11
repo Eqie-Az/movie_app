@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/language_provider.dart';
-import '../viewmodel/movie_viewmodel.dart';
-import '../model/movie.dart';
-import '../theme/app_style.dart';
-import 'detailmovie.dart';
+import '../../viewmodel/language_provider.dart';
+import '../../viewmodel/movie_viewmodel.dart';
+import '../../models/movie.dart';
+import '../../theme/app_style.dart';
+import '../detail/detailmovie.dart';
 
 class ListMoviePage extends StatefulWidget {
   const ListMoviePage({super.key});

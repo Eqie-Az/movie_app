@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_style.dart';
-import '../viewmodel/user_provider.dart';
-import '../viewmodel/language_provider.dart'; // [PENTING] Import LanguageProvider
-import 'login_page.dart';
+import '../../theme/app_style.dart';
+import '../../viewmodel/user_provider.dart';
+import '../../viewmodel/language_provider.dart'; // [PENTING] Import LanguageProvider
+import '../auth/login_page.dart';
 import 'settings_page.dart';
 import 'about.dart';
 import 'language_page.dart';

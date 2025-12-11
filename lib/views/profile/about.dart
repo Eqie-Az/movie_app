@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Pastikan sudah 'flutter pub add url_launcher'
-import '../theme/app_style.dart';
+import '../../theme/app_style.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});

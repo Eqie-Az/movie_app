@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../model/movie.dart';
-import '../theme/app_style.dart';
-import '../viewmodel/movie_viewmodel.dart';
-import '../viewmodel/language_provider.dart';
-import '../viewmodel/user_provider.dart';
-import 'booking/seat_selection.dart';
-import 'login_page.dart';
+import '../../models/movie.dart';
+import '../../theme/app_style.dart';
+import '../../viewmodel/movie_viewmodel.dart';
+import '../../viewmodel/language_provider.dart';
+import '../../viewmodel/user_provider.dart';
+import '../booking/seat_selection.dart';
+import '../auth/login_page.dart';
 
 class DetailMoviePage extends StatefulWidget {
   final Movie movie;

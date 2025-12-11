@@ -4,7 +4,7 @@ import '../../theme/app_style.dart';
 import '../../viewmodel/ticket_provider.dart';
 import '../../viewmodel/language_provider.dart';
 import '../../viewmodel/user_provider.dart';
-import '../login_page.dart';
+import '../auth/login_page.dart';
 
 class TicketHistoryPage extends StatelessWidget {
   const TicketHistoryPage({super.key});

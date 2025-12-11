@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_style.dart';
-import '../viewmodel/user_provider.dart';
-import '../viewmodel/language_provider.dart'; // [PENTING] Import LanguageProvider
+import '../../theme/app_style.dart';
+import '../../viewmodel/user_provider.dart';
+import '../../viewmodel/language_provider.dart'; // [PENTING] Import LanguageProvider
 import 'account_data_page.dart';
-import 'home.dart';
+import '../home/home.dart';
 import 'about.dart';
 import 'language_page.dart';
 import 'faq_page.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import '../theme/app_style.dart';
+import '../../theme/app_style.dart';
 
 class CitySelectionPage extends StatefulWidget {
   const CitySelectionPage({super.key});

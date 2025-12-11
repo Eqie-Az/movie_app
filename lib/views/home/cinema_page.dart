@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_style.dart';
-import '../viewmodel/language_provider.dart';
+import '../../theme/app_style.dart';
+import '../../viewmodel/language_provider.dart';
 import 'city_selection_page.dart';
-import 'cinema_detail_page.dart';
+import '../detail/cinema_detail_page.dart';
 
 class CinemaPage extends StatefulWidget {
   const CinemaPage({super.key});

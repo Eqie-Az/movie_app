@@ -4,7 +4,7 @@ import '../../theme/app_style.dart';
 import '../../viewmodel/ticket_provider.dart';
 import '../../viewmodel/language_provider.dart';
 import '../../viewmodel/notification_provider.dart'; // [IMPORT INI]
-import '../home.dart';
+import '../home/home.dart';
 
 class PaymentPage extends StatefulWidget {
   final String movieTitle;

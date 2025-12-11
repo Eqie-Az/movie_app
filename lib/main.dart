@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'views/home.dart';
+import 'views/home/home.dart';
 import 'viewmodel/language_provider.dart';
 import 'viewmodel/notification_provider.dart'; // Provider Notifikasi
 import 'viewmodel/user_provider.dart';

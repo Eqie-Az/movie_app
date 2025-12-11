@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../theme/app_style.dart';
+import '../../theme/app_style.dart';
 
 class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});

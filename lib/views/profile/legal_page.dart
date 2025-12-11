@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_style.dart';
+import '../../theme/app_style.dart';
 
 enum LegalType { terms, privacy }
 

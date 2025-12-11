@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/language_provider.dart';
-import '../viewmodel/movie_viewmodel.dart';
-import '../viewmodel/notification_provider.dart';
-import '../viewmodel/user_provider.dart';
-import '../model/movie.dart';
-import '../theme/app_style.dart';
-import 'detailmovie.dart';
+import '../../viewmodel/language_provider.dart';
+import '../../viewmodel/movie_viewmodel.dart';
+import '../../viewmodel/notification_provider.dart';
+import '../../viewmodel/user_provider.dart';
+import '../../models/movie.dart';
+import '../../theme/app_style.dart';
+import '../detail/detailmovie.dart';
 import 'listmovie.dart';
-import 'profile_page.dart';
-import '../views/ticket/history.dart';
+import '../profile/profile_page.dart';
+import '../ticket/history.dart';
 import 'city_selection_page.dart';
 import 'cinema_page.dart';
-import 'notification_page.dart';
-import 'login_page.dart';
+import '../notification/notification_page.dart';
+import '../auth/login_page.dart';
 
 class HomePage extends StatefulWidget {
   // [UPDATE] Parameter opsional untuk menentukan tab awal yang dibuka
