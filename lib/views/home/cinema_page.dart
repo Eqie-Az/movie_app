@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/language_provider.dart';
+import '../../providers/language_provider.dart';
 import 'city_selection_page.dart';
 import '../detail/cinema_detail_page.dart';
 

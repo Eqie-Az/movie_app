@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/language_provider.dart';
-import '../../viewmodel/notification_provider.dart';
+import '../../providers/language_provider.dart';
+import '../../providers/notification_provider.dart'; // Import Provider
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({super.key});
 
-  // [BARU] Fungsi menampilkan detail notifikasi saat diklik
+  // Fungsi menampilkan detail notifikasi saat diklik
   void _showNotificationDetail(
     BuildContext context,
     String title,
@@ -90,7 +90,7 @@ class NotificationPage extends StatelessWidget {
                     isInbox: false,
                   ),
 
-            // Tab 2: INBOX (Riwayat Transaksi)
+            // Tab 2: INBOX (Riwayat Transaksi) - Kosong di awal, terisi setelah bayar
             inboxList.isEmpty
                 ? _buildEmptyState(isIndo)
                 : _buildNotificationList(
@@ -120,16 +120,15 @@ class NotificationPage extends StatelessWidget {
           const Divider(height: 1, indent: 70),
       itemBuilder: (context, index) {
         final item = data[index];
+        // Pilih bahasa teks
         final title = isIndo ? item['title_id'] : item['title_en'];
         final body = isIndo ? item['body_id'] : item['body_en'];
 
         return InkWell(
           // [FITUR KLIK]
           onTap: () {
-            // Tandai sudah dibaca jika di inbox
-            if (isInbox) provider.markAsRead(index);
-            // Tampilkan detail
-            _showNotificationDetail(context, title, body);
+            if (isInbox) provider.markAsRead(index); // Tandai baca
+            _showNotificationDetail(context, title, body); // Buka Pop-up
           },
           child: Container(
             color: item['isRead']

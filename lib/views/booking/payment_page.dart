@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/ticket_provider.dart';
-import '../../viewmodel/language_provider.dart';
-import '../../viewmodel/notification_provider.dart'; // [IMPORT INI]
-import '../home/home.dart';
+import '../../providers/ticket_provider.dart'; // Folder providers
+import '../../providers/language_provider.dart'; // Folder providers
+import '../../providers/notification_provider.dart'; // [IMPORT PENTING]
+import '../home/home.dart'; // Arahkan kembali ke Home
 
 class PaymentPage extends StatefulWidget {
   final String movieTitle;
@@ -23,7 +23,7 @@ class PaymentPage extends StatefulWidget {
     required this.time,
     required this.seats,
     required this.totalPrice,
-    this.posterPath = "https://image.tmdb.org/t/p/w500/nm9d10Y00X97792a.jpg",
+    required this.posterPath,
   });
 
   @override
@@ -55,40 +55,16 @@ class _PaymentPageState extends State<PaymentPage> {
                 : "Enter $_selectedPayment PIN",
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                isIndo ? "Total Tagihan:" : "Total Amount:",
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-              Text(
-                "Rp ${widget.totalPrice}",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _pinController,
-                keyboardType: TextInputType.number,
-                obscureText: true,
-                maxLength: 6,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: "******",
-                  counterText: "",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primary, width: 2),
-                  ),
-                ),
-              ),
-            ],
+          content: TextField(
+            controller: _pinController,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            maxLength: 6,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: "******",
+              counterText: "",
+            ),
           ),
           actions: [
             TextButton(
@@ -138,11 +114,9 @@ class _PaymentPageState extends State<PaymentPage> {
         child: CircularProgressIndicator(color: AppColors.primary),
       ),
     );
-
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2)); // Simulasi Loading
     if (!mounted) return;
     Navigator.pop(context);
-
     _processPaymentSuccess(isIndo);
   }
 
@@ -157,7 +131,7 @@ class _PaymentPageState extends State<PaymentPage> {
       posterPath: widget.posterPath,
     );
 
-    // 2. [UPDATE UTAMA] Tambahkan Notifikasi ke Inbox Provider
+    // 2. [LOGIKA BARU] Tambahkan Notifikasi ke Inbox saat ini juga!
     Provider.of<NotificationProvider>(context, listen: false).addNotification(
       type: "system",
       titleId: "Pembayaran Berhasil",
@@ -205,6 +179,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   ),
                   onPressed: () {
                     _pinController.clear();
+                    // Kembali ke Home tab Tiket
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
@@ -231,7 +206,6 @@ class _PaymentPageState extends State<PaymentPage> {
     final isIndo =
         Provider.of<LanguageProvider>(context).currentLocale.languageCode ==
         'id';
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -257,6 +231,7 @@ class _PaymentPageState extends State<PaymentPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Info Film (Sama seperti sebelumnya)
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -316,14 +291,28 @@ class _PaymentPageState extends State<PaymentPage> {
                     ),
                     child: Column(
                       children: [
-                        _buildPaymentMethod(
-                          "DANA",
-                          "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/2560px-Logo_dana_blue.svg.png",
+                        RadioListTile(
+                          value: "DANA",
+                          groupValue: _selectedPayment,
+                          onChanged: (v) =>
+                              setState(() => _selectedPayment = v.toString()),
+                          title: const Text(
+                            "DANA",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          activeColor: AppColors.primary,
                         ),
                         const Divider(height: 1),
-                        _buildPaymentMethod(
-                          "ShopeePay",
-                          "https://seeklogo.com/images/S/shopeepay-logo-2219BD1016-seeklogo.com.png",
+                        RadioListTile(
+                          value: "ShopeePay",
+                          groupValue: _selectedPayment,
+                          onChanged: (v) =>
+                              setState(() => _selectedPayment = v.toString()),
+                          title: const Text(
+                            "ShopeePay",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          activeColor: AppColors.primary,
                         ),
                       ],
                     ),
@@ -334,25 +323,13 @@ class _PaymentPageState extends State<PaymentPage> {
           ),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
+            color: Colors.white,
             child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      isIndo ? "Total Bayar" : "Total Payment",
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
+                    Text(isIndo ? "Total Bayar" : "Total Payment"),
                     Text(
                       "Rp ${widget.totalPrice}",
                       style: const TextStyle(
@@ -370,9 +347,6 @@ class _PaymentPageState extends State<PaymentPage> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
                     ),
                     onPressed: () => _showPinDialog(isIndo),
                     child: Text(
@@ -388,27 +362,6 @@ class _PaymentPageState extends State<PaymentPage> {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethod(String name, String imgUrl) {
-    return RadioListTile(
-      value: name,
-      groupValue: _selectedPayment,
-      activeColor: AppColors.primary,
-      onChanged: (val) => setState(() => _selectedPayment = val.toString()),
-      title: Row(
-        children: [
-          Image.network(
-            imgUrl,
-            width: 40,
-            height: 20,
-            errorBuilder: (c, e, s) => const Icon(Icons.payment),
-          ),
-          const SizedBox(width: 10),
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/language_provider.dart';
-import '../../viewmodel/movie_viewmodel.dart';
+import '../../providers/language_provider.dart';
+import '../../providers/movie_provider.dart'; // [PENTING] Import Provider Baru
 import '../../models/movie.dart';
 import '../../theme/app_style.dart';
 import '../detail/detailmovie.dart';
@@ -14,7 +14,8 @@ class ListMoviePage extends StatefulWidget {
 }
 
 class _ListMoviePageState extends State<ListMoviePage> {
-  final MovieViewModel viewModel = MovieViewModel();
+  // [UPDATE] Gunakan MovieProvider
+  final MovieProvider _movieProvider = MovieProvider();
 
   // Dua Future terpisah agar data tidak tercampur
   Future<List<Movie>>? _nowPlayingFuture; // Untuk Tab "Sedang Tayang"
@@ -34,13 +35,9 @@ class _ListMoviePageState extends State<ListMoviePage> {
     if (_lastLanguageCode != languageCode) {
       _lastLanguageCode = languageCode;
       setState(() {
-        // [PENTING] Panggil fungsi yang berbeda untuk setiap kategori
-        _nowPlayingFuture = viewModel.fetchMovies(
-          languageCode,
-        ); // API: Now Playing
-        _upcomingFuture = viewModel.fetchUpcomingMovies(
-          languageCode,
-        ); // API: Upcoming
+        // [PENTING] Panggil fungsi provider yang berbeda untuk setiap kategori
+        _nowPlayingFuture = _movieProvider.fetchMovies(languageCode);
+        _upcomingFuture = _movieProvider.fetchUpcomingMovies(languageCode);
       });
     }
   }

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
 import '../auth/login_page.dart';
-import '../../viewmodel/movie_viewmodel.dart';
-import '../../viewmodel/language_provider.dart';
-import '../../viewmodel/user_provider.dart';
+import '../../providers/movie_provider.dart'; // [UPDATE] Menggunakan Provider
+import '../../providers/language_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../models/movie.dart';
 import 'detailmovie.dart';
 import '../booking/seat_selection.dart';
@@ -19,12 +19,14 @@ class CinemaDetailPage extends StatefulWidget {
 }
 
 class _CinemaDetailPageState extends State<CinemaDetailPage> {
+  // [UPDATE] Menggunakan MovieProvider untuk mengambil data
+  final MovieProvider _movieProvider = MovieProvider();
+
   int _selectedDateIndex = 0;
 
   // Variabel untuk menyimpan tiket yang dipilih (termasuk posterPath)
   Map<String, dynamic>? _selectedTicket;
 
-  final MovieViewModel _movieViewModel = MovieViewModel();
   Future<List<Movie>>? _moviesFuture;
   String _lastLanguageCode = '';
 
@@ -93,9 +95,12 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
     final languageCode = Provider.of<LanguageProvider>(
       context,
     ).currentLocale.languageCode;
+
+    // Fetch data hanya jika bahasa berubah
     if (_lastLanguageCode != languageCode) {
       _lastLanguageCode = languageCode;
-      _moviesFuture = _movieViewModel.fetchMovies(languageCode);
+      // Menggunakan Provider untuk mengambil data film (Simulasi jadwal tayang)
+      _moviesFuture = _movieProvider.fetchMovies(languageCode);
     }
   }
 
@@ -247,25 +252,67 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Text(
-                          widget.cinemaData['address'] ?? "-",
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                widget.cinemaData['address'] ?? "-",
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          widget.cinemaData['phone'] ?? "-",
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.phone,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.cinemaData['phone'] ?? "-",
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                   const Divider(thickness: 1, height: 1),
+
+                  // MENU MAKANAN (Opsional)
+                  ListTile(
+                    leading: const Icon(Icons.fastfood, color: Colors.orange),
+                    title: Text(
+                      isIndo
+                          ? "Pesan Makanan & Minuman"
+                          : "Order Food & Beverage",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                    onTap: () {},
+                  ),
+                  const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
 
                   // JADWAL TANGGAL (REAL TIME)
                   Padding(
@@ -356,12 +403,31 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                   ),
                   const Divider(thickness: 1, height: 1),
 
-                  // LIST FILM
+                  // LIST FILM (DARI PROVIDER)
                   FutureBuilder<List<Movie>>(
                     future: _moviesFuture,
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData)
-                        return const Center(child: CircularProgressIndicator());
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            isIndo
+                                ? "Gagal memuat film"
+                                : "Failed to load movies",
+                          ),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
+                          child: Text(
+                            isIndo ? "Tidak ada jadwal" : "No schedule",
+                          ),
+                        );
+                      }
+
                       final movies = snapshot.data!;
                       return ListView.separated(
                         shrinkWrap: true,
@@ -380,20 +446,30 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
             ),
           ),
 
-          // TOMBOL BELI TIKET
+          // TOMBOL BELI TIKET (STICKY BOTTOM)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
             ),
             child: SizedBox(
               width: double.infinity,
+              height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isTicketSelected
                       ? AppColors.primary
                       : Colors.grey.shade300,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 onPressed: isTicketSelected
                     ? () => _checkLoginAndAction(
@@ -404,6 +480,7 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
                   isIndo ? "BELI TIKET" : "BUY TICKET",
                   style: const TextStyle(
                     color: Colors.white,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -417,96 +494,167 @@ class _CinemaDetailPageState extends State<CinemaDetailPage> {
 
   Widget _buildMovieItem(Movie movie, bool isIndo) {
     final List<String> showTimes = ["12:05", "14:20", "16:35", "19:00"];
+
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Image.network(
-                movie.posterPath,
-                width: 80,
-                height: 120,
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) =>
-                    Container(width: 80, height: 120, color: Colors.grey),
+        // INFO FILM
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailMoviePage(movie: movie),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      movie.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      isIndo ? "Inggris/Indonesia" : "English/Indonesian",
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        "R 13+",
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                    ),
-                  ],
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    movie.posterPath,
+                    width: 80,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) =>
+                        Container(width: 80, height: 120, color: Colors.grey),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        movie.title.toUpperCase(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isIndo ? "Inggris/Indonesia" : "English/Indonesian",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Rating & Info
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${movie.voteAverage}/10",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              "R 13+",
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+
         const SizedBox(height: 10),
+
+        // JADWAL JAM
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Wrap(
-            spacing: 10,
-            children: showTimes.map((time) {
-              bool isSelected =
-                  _selectedTicket != null &&
-                  _selectedTicket!['movieId'] == movie.id &&
-                  _selectedTicket!['time'] == time;
-              return GestureDetector(
-                onTap: () => setState(() {
-                  // [PENTING] Simpan URL Poster di sini
-                  _selectedTicket = {
-                    'movieId': movie.id,
-                    'title': movie.title,
-                    'time': time,
-                    'posterPath': movie.posterPath,
-                  };
-                }),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "2D",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.white,
-                    border: Border.all(color: Colors.black12),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    time,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
+                  Text(
+                    "Rp35.000",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: showTimes.map((time) {
+                  bool isSelected =
+                      _selectedTicket != null &&
+                      _selectedTicket!['movieId'] == movie.id &&
+                      _selectedTicket!['time'] == time;
+                  return GestureDetector(
+                    onTap: () => setState(() {
+                      // [PENTING] Simpan data tiket termasuk Poster
+                      _selectedTicket = {
+                        'movieId': movie.id,
+                        'title': movie.title,
+                        'time': time,
+                        'posterPath': movie.posterPath,
+                      };
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.primary : Colors.white,
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.black12,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        time,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ),
       ],

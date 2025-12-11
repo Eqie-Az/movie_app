@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/ticket_provider.dart';
-import '../../viewmodel/language_provider.dart';
-import '../../viewmodel/user_provider.dart';
+import '../../providers/ticket_provider.dart';
+import '../../providers/language_provider.dart';
+import '../../providers/user_provider.dart';
 import '../auth/login_page.dart';
 
 class TicketHistoryPage extends StatelessWidget {

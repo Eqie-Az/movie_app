@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 class NotificationProvider extends ChangeNotifier {
   // 1. LIST INBOX (Riwayat Transaksi) - DIMULAI KOSONG []
+  // Ini memastikan saat user login, tidak ada notifikasi "Pembayaran Berhasil" palsu.
   final List<Map<String, dynamic>> _inboxNotifications = [];
 
-  // 2. LIST PROMO (Marketing - Tetap ada sebagai hiasan)
+  // 2. LIST PROMO (Marketing - Tetap ada sebagai dummy/hiasan)
   final List<Map<String, dynamic>> _promoNotifications = [
     {
       "type": "promo",
@@ -32,17 +33,17 @@ class NotificationProvider extends ChangeNotifier {
   List<Map<String, dynamic>> get inboxNotifications => _inboxNotifications;
   List<Map<String, dynamic>> get promoNotifications => _promoNotifications;
 
-  // Getter Jumlah Notifikasi Belum Dibaca (Opsional untuk Badge Lonceng)
+  // Getter Jumlah Notifikasi Belum Dibaca (Untuk Badge di Home)
   int get notificationCount =>
       _inboxNotifications.where((n) => !n['isRead']).length;
 
-  // [FUNGSI UTAMA] Menambah Notifikasi Baru (Dipanggil saat Bayar Sukses)
+  // [FUNGSI UTAMA] Menambah Notifikasi Baru (Dipanggil HANYA saat Bayar Sukses)
   void addNotification({
     required String titleId,
     required String titleEn,
     required String bodyId,
     required String bodyEn,
-    required String type, // 'system' atau 'promo'
+    String type = "system",
   }) {
     // Insert di index 0 agar muncul paling atas
     _inboxNotifications.insert(0, {
@@ -51,10 +52,10 @@ class NotificationProvider extends ChangeNotifier {
       "title_en": titleEn,
       "body_id": bodyId,
       "body_en": bodyEn,
-      "time": "Baru saja", // Simplifikasi waktu
+      "time": "Baru saja", // Waktu saat ini
       "isRead": false,
     });
-    notifyListeners();
+    notifyListeners(); // Update UI
   }
 
   // Fungsi Tandai Sudah Dibaca (Saat diklik)

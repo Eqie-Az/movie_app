@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/auth_service.dart'; // Import AuthService
+import '../../services/auth_service.dart'; // Import AuthService
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/user_provider.dart';
-import '../../viewmodel/language_provider.dart'; // [PENTING] Import LanguageProvider
+import '../../providers/user_provider.dart';
+import '../../providers/language_provider.dart'; // [PENTING] Import LanguageProvider
 import '../auth/login_page.dart';
 import 'settings_page.dart';
 import 'about.dart';

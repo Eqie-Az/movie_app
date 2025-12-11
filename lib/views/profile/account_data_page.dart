@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/user_provider.dart';
-import '../../viewmodel/auth_service.dart';
-import '../../viewmodel/language_provider.dart';
+import '../../providers/user_provider.dart';
+import '../../services/auth_service.dart';
+import '../../providers/language_provider.dart';
 import '../home/home.dart'; // Import Home untuk navigasi setelah hapus
 
 class AccountDataPage extends StatelessWidget {

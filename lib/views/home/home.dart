@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/language_provider.dart';
-import '../../viewmodel/movie_viewmodel.dart';
-import '../../viewmodel/notification_provider.dart';
-import '../../viewmodel/user_provider.dart';
+
+// [UPDATE IMPORT] Mengarah ke folder providers & models yang baru
+import '../../providers/language_provider.dart';
+import '../../providers/movie_provider.dart'; // Ganti ViewModel jadi Provider
+import '../../providers/notification_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../models/movie.dart';
 import '../../theme/app_style.dart';
+
+// [UPDATE IMPORT] Mengarah ke folder views yang sudah dirapikan
 import '../detail/detailmovie.dart';
-import 'listmovie.dart';
+import 'listmovie.dart'; // Satu folder (home)
 import '../profile/profile_page.dart';
 import '../ticket/history.dart';
-import 'city_selection_page.dart';
-import 'cinema_page.dart';
+import 'city_selection_page.dart'; // Satu folder (home)
+import 'cinema_page.dart'; // Satu folder (home)
 import '../notification/notification_page.dart';
 import '../auth/login_page.dart';
 
 class HomePage extends StatefulWidget {
-  // [UPDATE] Parameter opsional untuk menentukan tab awal yang dibuka
-  // Berguna saat redirect dari halaman pembayaran ke halaman tiket
   final int initialIndex;
 
   const HomePage({super.key, this.initialIndex = 0});
@@ -38,7 +40,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // [UPDATE] Set tab awal sesuai parameter yang dikirim
     _selectedIndex = widget.initialIndex;
   }
 
@@ -83,14 +84,14 @@ class HomePageContent extends StatefulWidget {
 }
 
 class _HomePageContentState extends State<HomePageContent> {
-  final MovieViewModel viewModel = MovieViewModel();
+  // [UPDATE] Gunakan MovieProvider
+  final MovieProvider _movieProvider = MovieProvider();
   final TextEditingController _searchController = TextEditingController();
 
   Future<List<Movie>>? _moviesFuture;
   bool _isSearching = false;
   String _currentCity = "MALANG";
   String _lastLanguageCode = '';
-
   int _selectedFilterIndex = 0;
   final Set<int> _watchlist = {};
 
@@ -101,7 +102,6 @@ class _HomePageContentState extends State<HomePageContent> {
       context,
     ).currentLocale.languageCode;
 
-    // Refresh data jika bahasa berubah atau pertama kali load
     if (_lastLanguageCode != languageCode) {
       _lastLanguageCode = languageCode;
       _loadData();
@@ -110,8 +110,7 @@ class _HomePageContentState extends State<HomePageContent> {
 
   void _loadData() {
     setState(() {
-      // Home memanggil fetchMovies (Now Playing/Sedang Tayang)
-      _moviesFuture = viewModel.fetchMovies(_lastLanguageCode);
+      _moviesFuture = _movieProvider.fetchMovies(_lastLanguageCode);
     });
   }
 
@@ -124,7 +123,7 @@ class _HomePageContentState extends State<HomePageContent> {
     } else {
       setState(() {
         _isSearching = true;
-        _moviesFuture = viewModel.searchMovies(query, _lastLanguageCode);
+        _moviesFuture = _movieProvider.searchMovies(query, _lastLanguageCode);
       });
     }
   }
@@ -134,18 +133,13 @@ class _HomePageContentState extends State<HomePageContent> {
       context,
       MaterialPageRoute(builder: (context) => const CitySelectionPage()),
     );
-    if (result != null) {
-      setState(() => _currentCity = result);
-    }
+    if (result != null) setState(() => _currentCity = result);
   }
 
   List<Movie> _applyFilter(List<Movie> movies) {
     if (_selectedFilterIndex == 0) return movies;
-
     return movies.where((movie) {
-      if (_selectedFilterIndex == 4) {
-        return _watchlist.contains(movie.id);
-      }
+      if (_selectedFilterIndex == 4) return _watchlist.contains(movie.id);
       if (_selectedFilterIndex == 1) return movie.id % 3 == 0;
       if (_selectedFilterIndex == 2) return movie.id % 3 == 1;
       if (_selectedFilterIndex == 3) return movie.id % 3 == 2;
@@ -153,13 +147,11 @@ class _HomePageContentState extends State<HomePageContent> {
     }).toList();
   }
 
-  // Fungsi Toggle Watchlist dengan Cek Login
   void _toggleWatchlist(int movieId) {
     final isLoggedIn = Provider.of<UserProvider>(
       context,
       listen: false,
     ).isLoggedIn;
-
     if (!isLoggedIn) {
       Navigator.push(
         context,
@@ -169,28 +161,20 @@ class _HomePageContentState extends State<HomePageContent> {
         const SnackBar(
           content: Text("Silakan login untuk menambahkan ke Watchlist"),
           backgroundColor: Colors.redAccent,
-          duration: Duration(seconds: 2),
         ),
       );
       return;
     }
-
     setState(() {
       if (_watchlist.contains(movieId)) {
         _watchlist.remove(movieId);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Dihapus dari Watchlist"),
-            duration: Duration(seconds: 1),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Dihapus dari Watchlist")));
       } else {
         _watchlist.add(movieId);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Ditambahkan ke Watchlist"),
-            duration: Duration(seconds: 1),
-          ),
+          const SnackBar(content: Text("Ditambahkan ke Watchlist")),
         );
       }
     });
@@ -199,7 +183,6 @@ class _HomePageContentState extends State<HomePageContent> {
   @override
   Widget build(BuildContext context) {
     final isIndo = _lastLanguageCode == 'id';
-
     final notifCount = Provider.of<NotificationProvider>(
       context,
     ).notificationCount;
@@ -211,52 +194,41 @@ class _HomePageContentState extends State<HomePageContent> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-
-            // --- HEADER ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Expanded(child: _buildSearchBar(isIndo)),
-
-                  // Icon Profil
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     icon: const Icon(Icons.account_circle_outlined, size: 30),
                     color: Colors.black,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
-                        ),
-                      );
-                    },
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfilePage(),
+                      ),
+                    ),
                   ),
-
-                  // Icon Notifikasi (Hanya muncul jika Login)
                   if (isLoggedIn) ...[
                     const SizedBox(width: 15),
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
                         GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const NotificationPage(),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NotificationPage(),
+                            ),
+                          ),
                           child: const Icon(
                             Icons.notifications_none_outlined,
                             size: 30,
                             color: Colors.black,
                           ),
                         ),
-
                         if (notifCount > 0)
                           Positioned(
                             right: -2,
@@ -283,31 +255,20 @@ class _HomePageContentState extends State<HomePageContent> {
                 ],
               ),
             ),
-
             if (!_isSearching) _buildLocationBar(),
-
             Expanded(
               child: FutureBuilder<List<Movie>>(
                 future: _moviesFuture,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+                  if (snapshot.connectionState == ConnectionState.waiting)
                     return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text("Error: ${snapshot.error}"));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  if (!snapshot.hasData || snapshot.data!.isEmpty)
                     return const Center(child: Text("No Data"));
-                  }
-
-                  final allMovies = snapshot.data!;
-                  final filteredMovies = _applyFilter(allMovies);
-
+                  final filteredMovies = _applyFilter(snapshot.data!);
                   return SingleChildScrollView(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
-
-                        // Header Kategori
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Row(
@@ -325,15 +286,13 @@ class _HomePageContentState extends State<HomePageContent> {
                               ),
                               if (!_isSearching)
                                 GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ListMoviePage(),
-                                      ),
-                                    );
-                                  },
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ListMoviePage(),
+                                    ),
+                                  ),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
@@ -355,38 +314,11 @@ class _HomePageContentState extends State<HomePageContent> {
                             ],
                           ),
                         ),
-
                         if (!_isSearching) ...[
                           const SizedBox(height: 10),
                           _buildCinemaFilters(isIndo),
                         ],
-
-                        if (filteredMovies.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(30.0),
-                            child: Center(
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.movie_filter_outlined,
-                                    size: 50,
-                                    color: Colors.grey.shade300,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    isIndo
-                                        ? "Tidak ada film di kategori ini"
-                                        : "No movies in this category",
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
                         const SizedBox(height: 15),
-
-                        // Horizontal List (Sedang Tayang)
                         if (!_isSearching && filteredMovies.isNotEmpty)
                           SizedBox(
                             height: 320,
@@ -405,20 +337,18 @@ class _HomePageContentState extends State<HomePageContent> {
                                   ),
                             ),
                           ),
-
                         const SizedBox(height: 20),
-
-                        // Header List Bawah (Opsional)
                         if (!_isSearching && filteredMovies.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              isIndo ? "Film Lainnya" : "More Movies",
-                              style: AppTextStyles.sectionHeader,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                isIndo ? "Film Lainnya" : "More Movies",
+                                style: AppTextStyles.sectionHeader,
+                              ),
                             ),
                           ),
-
-                        // Vertical Grid (Sedang Tayang - Sisa Film)
                         if (filteredMovies.isNotEmpty)
                           GridView.builder(
                             padding: const EdgeInsets.symmetric(
@@ -427,7 +357,6 @@ class _HomePageContentState extends State<HomePageContent> {
                             ),
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            // Tampilkan sisa film (mulai index 5) jika tidak sedang searching
                             itemCount: _isSearching
                                 ? filteredMovies.length
                                 : (filteredMovies.length > 5
@@ -444,12 +373,11 @@ class _HomePageContentState extends State<HomePageContent> {
                               final movieIndex = _isSearching
                                   ? index
                                   : index + 5;
-                              if (movieIndex < filteredMovies.length) {
+                              if (movieIndex < filteredMovies.length)
                                 return _buildMovieCard(
                                   context,
                                   filteredMovies[movieIndex],
                                 );
-                              }
                               return const SizedBox();
                             },
                           ),
@@ -465,63 +393,57 @@ class _HomePageContentState extends State<HomePageContent> {
     );
   }
 
-  Widget _buildSearchBar(bool isIndo) {
-    return Container(
-      height: 45,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(25),
+  // (Helper widgets seperti _buildSearchBar, _buildLocationBar dll, copy dari kode sebelumnya, hanya perbaiki impornya)
+  Widget _buildSearchBar(bool isIndo) => Container(
+    height: 45,
+    decoration: BoxDecoration(
+      color: Colors.grey.shade200,
+      borderRadius: BorderRadius.circular(25),
+    ),
+    child: TextField(
+      controller: _searchController,
+      onSubmitted: _performSearch,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: isIndo ? "Cari di CinemaTix" : "Search in CinemaTix",
+        hintStyle: TextStyle(color: Colors.grey.shade600),
+        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: Colors.grey),
+                onPressed: () {
+                  _searchController.clear();
+                  _performSearch("");
+                },
+              )
+            : null,
       ),
-      child: TextField(
-        controller: _searchController,
-        onSubmitted: _performSearch,
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          // [UPDATE NAMA APLIKASI]
-          hintText: isIndo ? "Cari di CinemaTix" : "Search in CinemaTix",
-          hintStyle: TextStyle(color: Colors.grey.shade600),
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+    ),
+  );
+  Widget _buildLocationBar() => GestureDetector(
+    onTap: _changeCity,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: Colors.white,
+      child: Row(
+        children: [
+          const Icon(Icons.location_on, color: Colors.grey, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            _currentCity,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.grey),
-                  onPressed: () {
-                    _searchController.clear();
-                    _performSearch("");
-                  },
-                )
-              : null,
-        ),
+          const Spacer(),
+          const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 24),
+        ],
       ),
-    );
-  }
-
-  Widget _buildLocationBar() {
-    return GestureDetector(
-      onTap: _changeCity,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        color: Colors.white,
-        child: Row(
-          children: [
-            const Icon(Icons.location_on, color: Colors.grey, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              _currentCity,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const Spacer(),
-            const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 24),
-          ],
-        ),
-      ),
-    );
-  }
-
+    ),
+  );
   Widget _buildCinemaFilters(bool isIndo) {
     final cinemas = [
       isIndo ? "Semua Film" : "All Movies",
@@ -539,11 +461,7 @@ class _HomePageContentState extends State<HomePageContent> {
         itemBuilder: (context, index) {
           final isSelected = _selectedFilterIndex == index;
           return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedFilterIndex = index;
-              });
-            },
+            onTap: () => setState(() => _selectedFilterIndex = index),
             child: Container(
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -572,7 +490,6 @@ class _HomePageContentState extends State<HomePageContent> {
 
   Widget _buildHorizontalMovieCard(BuildContext context, Movie movie) {
     final isLoved = _watchlist.contains(movie.id);
-
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -633,7 +550,6 @@ class _HomePageContentState extends State<HomePageContent> {
 
   Widget _buildMovieCard(BuildContext context, Movie movie) {
     final isLoved = _watchlist.contains(movie.id);
-
     return GestureDetector(
       onTap: () => Navigator.push(
         context,

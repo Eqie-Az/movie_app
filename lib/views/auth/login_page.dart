@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import '../../theme/app_style.dart';
 import 'register_page.dart';
 import '../home/home.dart';
-import '../../viewmodel/auth_service.dart';
-import '../../viewmodel/user_provider.dart';
+import '../../services/auth_service.dart';
+import '../../providers/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+// Import Views & Providers
 import 'views/home/home.dart';
-import 'viewmodel/language_provider.dart';
-import 'viewmodel/notification_provider.dart'; // Provider Notifikasi
-import 'viewmodel/user_provider.dart';
-import 'viewmodel/ticket_provider.dart';
-import 'viewmodel/auth_service.dart'; // [SUDAH DIKEMBALIKAN]
+import 'providers/language_provider.dart';
+import 'providers/notification_provider.dart';
+import 'providers/user_provider.dart';
+import 'providers/ticket_provider.dart';
+import 'services/auth_service.dart'; // Jika auth_service masih di viewmodel (sesuaikan path jika dipindah ke services)
 
 void main() {
   runApp(
@@ -16,6 +18,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => TicketProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
+      // [FIX] Pastikan nama kelasnya MovieApp, bukan MyApp
       child: const MovieApp(),
     ),
   );

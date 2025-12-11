@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/movie.dart';
 import '../../theme/app_style.dart';
-import '../../viewmodel/movie_viewmodel.dart';
-import '../../viewmodel/language_provider.dart';
-import '../../viewmodel/user_provider.dart';
+import '../../providers/movie_provider.dart'; // Import Provider
+import '../../providers/language_provider.dart';
+import '../../providers/user_provider.dart';
 import '../booking/seat_selection.dart';
 import '../auth/login_page.dart';
 
@@ -20,7 +20,8 @@ class DetailMoviePage extends StatefulWidget {
 
 class _DetailMoviePageState extends State<DetailMoviePage>
     with SingleTickerProviderStateMixin {
-  final MovieViewModel viewModel = MovieViewModel();
+  // Gunakan MovieProvider untuk mengambil data detail
+  final MovieProvider _movieProvider = MovieProvider();
   late TabController _tabController;
 
   String _genreText = "";
@@ -57,7 +58,6 @@ class _DetailMoviePageState extends State<DetailMoviePage>
   void _generateDates() {
     DateTime now = DateTime.now();
     List<Map<String, dynamic>> tempDates = [];
-
     final isIndo =
         Provider.of<LanguageProvider>(
           context,
@@ -167,21 +167,29 @@ class _DetailMoviePageState extends State<DetailMoviePage>
     });
 
     try {
-      final data = await viewModel.fetchMovieDetailExtras(
+      final data = await _movieProvider.fetchMovieDetailExtras(
         widget.movie.id,
         languageCode,
       );
       if (!mounted) return;
 
       setState(() {
-        _genreText = (data['genres'] == null || data['genres'].isEmpty)
+        _genreText =
+            (data['genres'] == null || data['genres'].toString().isEmpty)
             ? (isIndo ? "Tidak tersedia" : "Not available")
             : data['genres'];
         _durationText = data['duration'] ?? "-";
         _trailerKey = data['trailer'];
-        _castList = (data['cast'] as List)
-            .map((item) => Map<String, String>.from(item))
-            .toList();
+
+        // [UPDATE] Konversi data cast dengan aman untuk menghindari error String?
+        _castList = (data['cast'] as List).map((item) {
+          return {
+            'name': item['name']?.toString() ?? "Unknown",
+            'role': item['role']?.toString() ?? "-",
+            'image': item['image']?.toString() ?? "",
+          };
+        }).toList();
+
         _isDataLoaded = true;
       });
     } catch (e) {
@@ -285,7 +293,7 @@ class _DetailMoviePageState extends State<DetailMoviePage>
               cinemaName: cinemaName,
               time: time,
               date: formattedDate,
-              posterPath: widget.movie.posterPath,
+              posterPath: widget.movie.posterPath, // [UPDATE] Kirim data poster
             ),
           ),
         );
@@ -680,10 +688,9 @@ class _DetailMoviePageState extends State<DetailMoviePage>
   }
 
   Widget _buildSynopsisTab(bool isIndo) {
-    // [UPDATE LOGIKA SINOPSIS]
     String synopsisContent = widget.movie.overview;
 
-    // Cek jika sinopsis kosong
+    // [UPDATE] Logika jika sinopsis kosong
     if (synopsisContent.isEmpty) {
       synopsisContent = isIndo
           ? "Sinopsis dalam Bahasa Indonesia tidak tersedia."
@@ -696,14 +703,14 @@ class _DetailMoviePageState extends State<DetailMoviePage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            synopsisContent, // Gunakan teks yang sudah dicek
+            synopsisContent,
             textAlign: TextAlign.justify,
             style: TextStyle(
               fontSize: 14,
               height: 1.5,
               color: widget.movie.overview.isEmpty
                   ? Colors.grey
-                  : Colors.black87, // Warna abu jika kosong
+                  : Colors.black87,
               fontStyle: widget.movie.overview.isEmpty
                   ? FontStyle.italic
                   : FontStyle.normal,
@@ -744,6 +751,11 @@ class _DetailMoviePageState extends State<DetailMoviePage>
   }
 
   Widget _buildCastItem(Map<String, String> cast) {
+    // Handling null dengan nilai default agar tidak error String?
+    String name = cast['name'] ?? "Unknown";
+    String role = cast['role'] ?? "-";
+    String image = cast['image'] ?? "";
+
     return Container(
       width: 80,
       margin: const EdgeInsets.only(right: 12),
@@ -755,26 +767,26 @@ class _DetailMoviePageState extends State<DetailMoviePage>
             decoration: BoxDecoration(
               color: Colors.grey.shade300,
               borderRadius: BorderRadius.circular(8),
-              image: cast['image']!.isNotEmpty
+              image: image.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage(cast['image']!),
+                      image: NetworkImage(image),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: cast['image']!.isEmpty
+            child: image.isEmpty
                 ? const Icon(Icons.person, color: Colors.white)
                 : null,
           ),
           const SizedBox(height: 4),
           Text(
-            cast['name']!,
+            name,
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            cast['role']!,
+            role,
             style: const TextStyle(fontSize: 10, color: Colors.grey),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

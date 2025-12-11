@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/language_provider.dart';
+import '../../providers/language_provider.dart';
 
 class LanguagePage extends StatelessWidget {
   const LanguagePage({super.key});
